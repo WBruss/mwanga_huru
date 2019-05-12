@@ -5,15 +5,20 @@
 
 #include <ESP8266WiFi.h>
 
-char ssid[] = "ESPServer";           // SSID of your AP
-char pass[] = "espserver";         // password of your AP
+char ssid[] = "ESP8266";           // SSID of your AP
+char pass[] = "jamii2yote";         // password of your AP
 
-IPAddress server(192,168,4,15);     // IP address of the AP
+IPAddress server(192,168,4,1);     // IP address of the AP
 WiFiClient clients;
+
+const int pin = 2;
+String answer = "NULL";
 
 
 void setup() {
   Serial.begin(9600);
+  pinMode(pin, OUTPUT);
+  digitalWrite(pin, LOW);
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, pass);           // connects to the WiFi AP
   Serial.println();
@@ -24,7 +29,6 @@ void setup() {
   }
   Serial.println();
   Serial.println("Connected");
-  Serial.println("station_bare_01.ino");
   Serial.print("LocalIP:"); Serial.println(WiFi.localIP());
   Serial.println("MAC:" + WiFi.macAddress());
   Serial.print("Gateway:"); Serial.println(WiFi.gatewayIP());
@@ -32,16 +36,29 @@ void setup() {
 }
 
 void loop() {
-  clients.connect(server, 9999);
-  Serial.println("\n");
-  Serial.println("********************************");
-  Serial.print("Byte sent to the ESPServer: ");
-  Serial.println(clients.print(WiFi.macAddress() + "\r"));
-  String answer = clients.readStringUntil('\r');
-  Serial.println("From the ESPServer: " + answer);
-  Serial.println("********************************");
-  clients.flush();
-  clients.stop();
-  delay(2000);
-  delay(2000); 
+  Serial.println("");
+  Serial.println((clients.connect(server, 80))? "Connected" : "Server not found");  
+  
+    Serial.print("Byte sent to the ESPServer: ");
+    Serial.println(clients.print(WiFi.macAddress() + "\r"));
+    
+    while (clients.connected() || clients.available())
+    {
+      if (clients.available())
+      {
+        answer = clients.readStringUntil('.');
+        Serial.println("From the ESPServer: " + answer);
+        clients.flush();
+
+        if( answer == "on" ){
+          digitalWrite( pin, HIGH );
+          Serial.println("on");
+        }
+        else if(answer == "off" ){
+          digitalWrite( pin, LOW ); 
+          Serial.println("off");
+        } 
+      }
+    }  
+    clients.stop();  
 }
