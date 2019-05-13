@@ -40,7 +40,7 @@ void loop() {
   Serial.println((clients.connect(server, 80))? "Connected" : "Server not found");  
   
     Serial.print("Byte sent to the ESPServer: ");
-    Serial.println(clients.print(WiFi.macAddress() + "\r"));
+    Serial.println(clients.print(WiFi.macAddress() + "."));
     
     while (clients.connected() || clients.available())
     {
